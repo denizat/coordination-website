@@ -1,0 +1,21 @@
+{
+    "include": [
+        "src/index.tsx"
+    ],
+    "compilerOptions": {
+        "target": "ES5",
+        "esModuleInterop": true,
+        "strict": true,
+        "forceConsistentCasingInFileNames": true,
+        "module": "ESNext",
+        "moduleResolution": "node",
+        "isolatedModules": true,
+        "resolveJsonModule": true,
+        "jsx": "react",
+        "outDir": "./build/",
+        "removeComments": true,
+        "noEmit": false,
+        "sourceMap": true
+    },
+    "compileOnSave": true
+}
