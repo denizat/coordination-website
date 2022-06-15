@@ -1,4 +1,9 @@
-import React, { MouseEventHandler, ReactElement } from "react";
+import React, {
+  MouseEventHandler,
+  ReactElement,
+  useState,
+  useRef,
+} from "react";
 import ReactDOM from "react-dom";
 import "./index.css";
 // https://random.responsiveimages.io/
@@ -37,7 +42,7 @@ interface ButtonProps {
   onClick: MouseEventHandler;
   text: string;
 }
-const Button: React.FC<ButtonProps> = (props: ButtonProps): ReactElement => {
+const Button: React.FC<ButtonProps> = (props) => {
   return (
     <div
       className="cursor-pointer bg-blue-200 hover:bg-blue-500 text-black rounded-md w-min p-2"
@@ -48,182 +53,131 @@ const Button: React.FC<ButtonProps> = (props: ButtonProps): ReactElement => {
   );
 };
 
-class PeopleModal extends React.Component<
-  { showModal: boolean; submitter: Function; closeModal: Function },
-  {
-    nameValue: string;
-    colorValue: string;
-  }
-> {
-  constructor(props: any) {
-    super(props);
-    this.state = {
-      nameValue: "",
-      colorValue: "",
-    };
-    this.handleInputChange = this.handleInputChange.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
-  }
+const UselessButton: React.FC<{ text: string }> = (props) => {
+  return (
+    <div className="border-4 bg-red-600 border-red-600 w-min rounded-md">
+      <Button onClick={() => {}} text={props.text} />
+    </div>
+  );
+};
 
-  handleInputChange(event: React.FormEvent<HTMLInputElement>) {
-    if (event.currentTarget.name === "nameValue") {
-      this.setState({ nameValue: event.currentTarget.value });
-    } else if (event.currentTarget.name === "colorValue") {
-      this.setState({ colorValue: event.currentTarget.value });
-    }
-  }
-
-  handleSubmit(event: React.FormEvent<HTMLButtonElement>) {
-    event.preventDefault();
-    this.props.submitter(this.state.nameValue, this.state.colorValue);
-  }
-
-  render() {
-    let modalName = String(Math.random());
-    return this.props.showModal ? (
+const FunctionalPeopleModal: React.FC<{
+  showModal: boolean;
+  submitter: Function;
+  closeModal: Function;
+}> = (props) => {
+  const [nameValue, setNameValue] = useState("");
+  const [colorValue, setColorValue] = useState("");
+  const modalRef = useRef<HTMLDivElement>(null);
+  let modalName = String(Math.random());
+  return props.showModal ? (
+    <div
+      className="fixed top-0 left-0 w-full h-full z-40 bg-opacity-90 bg-black"
+      onClick={(e) => {
+        if (e.target !== modalRef.current) {
+          props.closeModal(e);
+        }
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Escape") {
+          props.closeModal(e);
+        }
+      }}
+    >
       <div
-        className="fixed top-0 left-0 w-full h-full z-40 bg-opacity-90 bg-black"
-        onClick={(e) => {
-          if (e.target !== document.getElementById(modalName)) {
-            this.props.closeModal(e);
-          }
-        }}
-        onKeyDown={(e) => {
-          if (e.key === "Escape") {
-            this.props.closeModal(e);
-          }
-        }}
+        ref={modalRef}
+        style={{ top: "20%", left: "20%", width: "60%", height: "60%" }}
+        className="fixed bg-gray-800 z-40 text-black"
       >
-        <div
-          id={modalName}
-          style={{ top: "20%", left: "20%", width: "40%", height: "40%" }}
-          className="fixed  bg-blue-500 z-40 text-black"
-        >
-          <form>
-            <label>
-              Name:
-              <input
-                autoFocus
-                type="text"
-                name="nameValue"
-                value={this.state.nameValue}
-                onChange={this.handleInputChange}
-              />
-            </label>
-            <label>
-              Color:
-              <input
-                type="text"
-                name="colorValue"
-                value={this.state.colorValue}
-                onChange={this.handleInputChange}
-              />
-            </label>
-            <button
-              onClick={(e) => {
-                this.setState({
-                  colorValue: "",
-                  nameValue: "",
-                });
-                this.handleSubmit(e);
-                this.props.closeModal(e);
-              }}
-            >
-              Submit
-            </button>
-          </form>
-          {/* <Button onClick={this.props.closeModal} text="close" /> */}
-        </div>
-      </div>
-    ) : null;
-  }
-}
-
-class PeopleHandler extends React.Component<
-  {},
-  {
-    people: Person[];
-    showModal: boolean;
-    CPI: number; // current person index
-  }
-> {
-  constructor(props: any) {
-    super(props);
-    this.state = {
-      people: [new Person("guest", randomColor())],
-      showModal: false,
-      CPI: 0,
-    };
-    this.addPerson = this.addPerson.bind(this);
-    this.changeTime = this.changeTime.bind(this);
-    this.changeCPI = this.changeCPI.bind(this);
-  }
-
-  addPerson(name: string, color: string) {
-    let s = this.state;
-    this.setState({
-      CPI: s.people.length,
-      people: [...s.people, new Person(name, color)],
-    });
-  }
-
-  changeCPI(n: number) {
-    this.setState({
-      CPI: n,
-    });
-  }
-
-  changeTime(n: number) {
-    let p = this.state.people;
-    let c = p[this.state.CPI];
-    c.busyTime[n] = !c.busyTime[n];
-    p[this.state.CPI] = c;
-    this.setState({
-      people: p,
-    });
-  }
-
-  render() {
-    let people = this.state.people;
-    return (
-      <div>
-        {/* {people.map((v, i) => (
-          <div
-            key={i}
-            style={{ backgroundColor: v.color }}
-            onClick={() => this.changeCPI(i)}
+        <form>
+          <label>
+            Name:
+            <input
+              autoFocus
+              type="text"
+              name="nameValue"
+              value={nameValue}
+              onChange={(e) => setNameValue(e.target.value)}
+            />
+          </label>
+          <label>
+            Color:
+            <input
+              type="text"
+              name="colorValue"
+              value={colorValue}
+              onChange={(e) => setColorValue(e.target.value)}
+            />
+          </label>
+          <button
+            onClick={(e) => {
+              setColorValue("");
+              setNameValue("");
+              e.preventDefault();
+              props.submitter(nameValue, colorValue);
+              props.closeModal(e);
+            }}
           >
-            Name: {v.name}
-          </div>
-        ))}
-        <div>Current CPI: {this.state.CPI}</div>
-        <div>Current Person: {this.state.people[this.state.CPI].name}</div> */}
-        <Button
-          onClick={() => this.setState({ showModal: true })}
-          text="Add Person"
-        />
-        <Button
-          onClick={() => {
-            this.addPerson(randomName(), randomColor());
-          }}
-          text="Add Random"
-        />
-        <PeopleModal
-          showModal={this.state.showModal}
-          submitter={this.addPerson}
-          closeModal={(() => this.setState({ showModal: false })).bind(this)}
-        />
-
-        <TimeHandler
-          // cpi={this.state.CPI}
-          people={this.state.people}
-          personTimeEditor={this.changeTime}
-          changeCPI={this.changeCPI}
-        />
+            Submit
+          </button>
+        </form>
       </div>
-    );
-  }
-}
+    </div>
+  ) : null;
+};
+
+const FunctionalPeopleHandler: React.FC = () => {
+  const [people, setPeople] = useState<Person[]>([
+    new Person("guest", randomColor()),
+  ]);
+  const [showModal, setShowModal] = useState<boolean>(false);
+  const [CPI, setCPI] = useState<number>(0);
+
+  const addPerson = (name: string, color: string) => {
+    setPeople([...people, new Person(name, color)]);
+    setCPI(people.length);
+  };
+
+  const changeTime = (n: number) => {
+    let p = people;
+    let c = p[CPI];
+    c.busyTime[n] = !c.busyTime[n];
+    p[CPI] = c;
+    // https://stackoverflow.com/questions/56266575/why-is-usestate-not-triggering-re-render
+    setPeople([...p]);
+  };
+
+  const reset = () => {
+    setPeople([new Person("guest", randomColor())]);
+    setCPI(0);
+  };
+
+  return (
+    <div>
+      <Button onClick={() => setShowModal(true)} text="Add Person" />
+      <Button
+        onClick={() => {
+          addPerson(randomName(), randomColor());
+        }}
+        text="Add Random"
+      />
+      <Button text="Reset" onClick={reset} />
+      <UselessButton text="Save to Server" />
+      <UselessButton text="Load from Server" />
+      <FunctionalPeopleModal
+        showModal={showModal}
+        submitter={addPerson}
+        closeModal={() => setShowModal(false)}
+      />
+
+      <TimeHandler
+        people={people}
+        personTimeEditor={changeTime}
+        changeCPI={setCPI}
+      />
+    </div>
+  );
+};
 
 interface TimeHandlerProps {
   people: Person[];
@@ -231,9 +185,12 @@ interface TimeHandlerProps {
   personTimeEditor: (timeIndex: number) => void;
   changeCPI: (i: number) => void;
 }
-const TimeHandler: React.FC<TimeHandlerProps> = (
-  props: TimeHandlerProps
-): ReactElement => {
+
+const TimeHandler: React.FC<TimeHandlerProps> = (props: TimeHandlerProps) => {
+  const [hoursMode, setHoursMode] = useState<"daytime" | "nighttime" | "all">(
+    "all"
+  );
+  const [timeMode, setTimeMode] = useState<"ampm" | "24hr">("ampm");
   // total percent of people busy at a time index
   const busyAt = (index: number) => {
     let res =
@@ -244,7 +201,7 @@ const TimeHandler: React.FC<TimeHandlerProps> = (
   };
   // daytime hours mean 7am to 10pm
   return (
-    <div className="w-1/2 left-1/4 absolute">
+    <div className=" absolute" style={{ width: "60%", left: "20%" }}>
       <div className="border-4 border-purple-400 flex flex-row">
         <Button onClick={() => {}} text="Daytime" />
         <Button onClick={() => {}} text="Nighttime" />
@@ -266,7 +223,7 @@ const TimeHandler: React.FC<TimeHandlerProps> = (
                 backgroundColor: v.color,
               }}
             >
-              <div className="bg-gray-800 w-min m-auto rounded-md h-full text-lg p-2 flex justify-center items-center">
+              <div className="bg-gray-800 w-min m-auto rounded-md h-16 text-lg p-2 flex justify-center items-center">
                 {v.name}
               </div>
             </div>
@@ -327,17 +284,13 @@ const TimeHandler: React.FC<TimeHandlerProps> = (
   );
 };
 
-class App extends React.Component {
-  constructor(props: any) {
-    super(props);
-  }
-  render() {
-    return (
-      <div>
-        <PeopleHandler />
-      </div>
-    );
-  }
-}
+const App: React.FC = () => {
+  return (
+    <div>
+      <FunctionalPeopleHandler />
+      {/* <PeopleHandler /> */}
+    </div>
+  );
+};
 
 ReactDOM.render(<App />, document.getElementById("app"));
