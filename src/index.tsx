@@ -3,6 +3,24 @@ import ReactDOM from "react-dom";
 import "./index.css";
 // https://random.responsiveimages.io/
 // https://tailwindcss.com/docs/customizing-colors
+// https://www.freecodecamp.org/news/how-to-center-anything-with-css-align-a-div-text-and-more/
+
+const randomColor = () => {
+  let c = "#" + Math.floor(Math.random() * 16777215).toString(16);
+  if (c.length < 7) {
+    c += "0";
+  }
+
+  return c;
+};
+
+const randomName = () => {
+  return (
+    Math.random().toString(36).substring(2, 7) +
+    " " +
+    Math.random().toString(36).substring(2, 7)
+  );
+};
 
 class Person {
   name: string;
@@ -132,12 +150,13 @@ class PeopleHandler extends React.Component<
   constructor(props: any) {
     super(props);
     this.state = {
-      people: [new Person("guest", "blue")],
+      people: [new Person("guest", randomColor())],
       showModal: false,
       CPI: 0,
     };
     this.addPerson = this.addPerson.bind(this);
     this.changeTime = this.changeTime.bind(this);
+    this.changeCPI = this.changeCPI.bind(this);
   }
 
   addPerson(name: string, color: string) {
@@ -168,7 +187,7 @@ class PeopleHandler extends React.Component<
     let people = this.state.people;
     return (
       <div>
-        {people.map((v, i) => (
+        {/* {people.map((v, i) => (
           <div
             key={i}
             style={{ backgroundColor: v.color }}
@@ -178,17 +197,17 @@ class PeopleHandler extends React.Component<
           </div>
         ))}
         <div>Current CPI: {this.state.CPI}</div>
-        <div>Current Person: {this.state.people[this.state.CPI].name}</div>
+        <div>Current Person: {this.state.people[this.state.CPI].name}</div> */}
         <Button
           onClick={() => this.setState({ showModal: true })}
           text="Add Person"
         />
-        {/* <button
-          className="bg-blue-600"
-          onClick={() => this.setState({ showModal: true })}
-        >
-          Add Person
-        </button> */}
+        <Button
+          onClick={() => {
+            this.addPerson(randomName(), randomColor());
+          }}
+          text="Add Random"
+        />
         <PeopleModal
           showModal={this.state.showModal}
           submitter={this.addPerson}
@@ -199,6 +218,7 @@ class PeopleHandler extends React.Component<
           // cpi={this.state.CPI}
           people={this.state.people}
           personTimeEditor={this.changeTime}
+          changeCPI={this.changeCPI}
         />
       </div>
     );
@@ -209,6 +229,7 @@ interface TimeHandlerProps {
   people: Person[];
   // cpi: number;
   personTimeEditor: (timeIndex: number) => void;
+  changeCPI: (i: number) => void;
 }
 const TimeHandler: React.FC<TimeHandlerProps> = (
   props: TimeHandlerProps
@@ -218,22 +239,26 @@ const TimeHandler: React.FC<TimeHandlerProps> = (
     let res =
       props.people.filter((person) => person.busyTime[index]).length /
       props.people.length;
-    console.log(res);
 
     return res * 100;
   };
+  // daytime hours mean 7am to 10pm
   return (
     <div className="w-1/2 left-1/4 absolute">
       <div className="border-4 border-purple-400 flex flex-row">
-        <Button onClick={() => {}} text="AM" />
-        <Button onClick={() => {}} text="PM" />
+        <Button onClick={() => {}} text="Daytime" />
+        <Button onClick={() => {}} text="Nighttime" />
+        <Button onClick={() => {}} text="All" />
+        <Button onClick={() => {}} text="AM/PM" />
+        <Button onClick={() => {}} text="24Hr" />
       </div>
-      <div>
+      <div className="flex flex-row cursor-pointer">
         {props.people.map((v, i) => {
           return (
             <div
               key={i}
-              className="border-4"
+              className="border-4  "
+              onClick={() => props.changeCPI(i)}
               style={{
                 width: String(100 / props.people.length) + "%", // there must be a proper way to do this
                 display: "inline-block",
@@ -241,7 +266,7 @@ const TimeHandler: React.FC<TimeHandlerProps> = (
                 backgroundColor: v.color,
               }}
             >
-              <div className="bg-gray-800 w-min m-auto rounded-md h-full text-lg p-2">
+              <div className="bg-gray-800 w-min m-auto rounded-md h-full text-lg p-2 flex justify-center items-center">
                 {v.name}
               </div>
             </div>
@@ -252,10 +277,21 @@ const TimeHandler: React.FC<TimeHandlerProps> = (
         {Array.from({ length: 24 }).map((v, ai) => {
           return (
             <div
-              className="border-4 border-blue-500"
+              className="border-4 border-blue-500 flex flex-row"
               key={ai}
               onClick={() => props.personTimeEditor(ai)}
             >
+              <div
+                className="inline-block select-none flex justify-center items-center absolute h-16"
+                style={{
+                  left: "-10%",
+                  width: "10%",
+                  backgroundColor: `hsl(0,100%,${100 - busyAt(ai) / 2}%`,
+                }}
+              >
+                {ai % 12} {}
+              </div>
+
               {props.people.map((v, i) => {
                 return (
                   <div
@@ -267,17 +303,16 @@ const TimeHandler: React.FC<TimeHandlerProps> = (
                       borderColor: v.color,
                       backgroundColor: v.busyTime[ai] ? v.color : undefined,
                     }}
-                  >
-                    {/* is {v.name} busy now?
-                    {v.busyTime[ai] ? "yes" : "no"} */}
-                  </div>
+                  ></div>
                 );
               })}
 
               {
                 <div
-                  className="inline-block select-none"
+                  className="inline-block select-none flex justify-center items-center absolute h-16"
                   style={{
+                    left: "100%",
+                    width: "10%",
                     backgroundColor: `hsl(0,100%,${100 - busyAt(ai) / 2}%`,
                   }}
                 >
